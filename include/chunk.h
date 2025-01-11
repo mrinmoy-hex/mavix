@@ -11,9 +11,9 @@ typedef enum {
 
 
 typedef struct {
-    int count;  // Number of elements in the array
-    int capacity;   // Number of elements that can be stored in the array (size of the array)
-    uint8_t* code;  // Array of bytes
+    int count;  // number of elements in the array
+    int capacity;   // size of the array
+    uint8_t* code;  // array of instructions
 } Chunk;
 
 void initChunk(Chunk* chunk);

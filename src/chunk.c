@@ -3,22 +3,22 @@
 #include "include/memory.h"
 #include "include/common.h"
 
-// Initialize the chunk with empty array
+// initialize the chunk with empty array
 void initChunk(Chunk* chunk) {
     chunk->count = 0;
     chunk->capacity = 0;
     chunk->code = NULL;
 }
 
-// Free the chunk and initialize it
+// free the chunk and initialize it
 void freeChunk(Chunk* chunk) {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);  // Free the array
     initChunk(chunk);   // Initialize the chunk
 }
 
-// Write a byte to the end of the chunk 
+// write a byte to the end of the chunk 
 void writeChunk(Chunk* chunk, uint8_t byte) {
-    // If the number of elements in the array is greater than or equal to the capacity of the array
+    // if the number of elements in the array is greater than or equal to the capacity of the array
     if (chunk->capacity < chunk->count + 1) {
         // Calculate the new capacity of the array
         int oldCapacity = chunk->capacity;

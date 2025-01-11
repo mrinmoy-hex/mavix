@@ -6,20 +6,24 @@ inc_dir = -I./        # Include directory for header files (relative path)
 
 # Rule to create the executable
 $(exec): $(obj)
-	$(CC) $(obj) $(flags) -o $(exec)        # Link object files into the executable
+# Link object files into the executable
+	$(CC) $(obj) $(flags) -o $(exec)        
 
 # Rule to create the object files
 build/%.o: src/%.c | build
-	gcc -c $(flags) $(inc_dir) $< -o $@     # Add include directory for header files
+# Add include directory for header files
+	gcc -c $(flags) $(inc_dir) $< -o $@     
 
 # Rule to create the build directory (if it doesn't exist)
 build:
-	mkdir -p build                         # Use -p to prevent errors if the directory exists
+# Use -p to prevent errors if the directory exists
+	mkdir -p build                         
 
 # Clean up the build artifacts
 clean:
-	rm -rf build                        # Remove the build directory and its contents
-	rm -f $(exec)                        # Remove the executable
+# Remove the build directory and its contents
+	rm -rf build                        
+	rm -f $(exec)                        
 
 # Declare clean and build as phony targets (not actual files)
 .PHONY: clean build
