@@ -22,7 +22,7 @@ void freeChunk(Chunk* chunk) {
 
 // write a byte to the end of the chunk 
 void writeChunk(Chunk* chunk, uint8_t byte, int line) {
-    // if the number of elements in the array is greater than or equal to the capacity of the array
+    // checks if there is space for one more element in the array
     if (chunk->capacity < chunk->count + 1) {
         // Calculate the new capacity of the array
         int oldCapacity = chunk->capacity;
