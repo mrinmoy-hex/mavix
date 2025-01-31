@@ -1,4 +1,4 @@
-exec = clox                  # Executable name
+exec = mira                       # Executable name
 src = $(wildcard src/*.c)         # Source files
 obj = $(patsubst src/%.c, build/%.o, $(src))  # Object files
 flags = -g                        # Compiler flags (for debugging)
