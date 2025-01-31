@@ -12,16 +12,27 @@ typedef enum {
 } OpCode;
 
 
+// struct to store line info (run-length encoding)
+typedef struct {
+    int lineNumber;     // the actual line number
+    int count;          // number of instructions in this line
+} LineEntry;
+
 typedef struct {
     int count;              // number of elements in the array
     int capacity;           // size of the array
     uint8_t* code;          // array of instructions
-    int* lines;
+    LineEntry* lines;       // Array of (line, count) pairs
+    int lineCount;          // number of used entries in lines
+    int lineCapacity;       // capacity of lines array
     ValueArray constants;   // array of constants
 } Chunk;
+
+
 
 // function prototypes
 void initChunk(Chunk* chunk);
 void freeChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, uint8_t byte, int line);
 int addConstant(Chunk* chunk, Value value);
+void getLine();

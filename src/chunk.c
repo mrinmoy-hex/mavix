@@ -9,13 +9,14 @@ void initChunk(Chunk* chunk) {
     chunk->capacity = 0;
     chunk->code = NULL;
     chunk->lines = NULL;
+    chunk->lineCount = 0;
     initValueArray(&chunk->constants);
 }
 
 // free the chunk and initialize it
 void freeChunk(Chunk* chunk) {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);  // Free the array
-    FREE_ARRAY(int, chunk->lines, chunk->capacity);
+    FREE_ARRAY(LineEntry, chunk->lines, chunk->capacity);
     freeValueArray(&chunk->constants);
     initChunk(chunk);                                   // Initialize the chunk
 }
@@ -29,14 +30,36 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
         chunk->capacity = GROW_CAPACITY(oldCapacity);
         // Reallocate memory for the array
         chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
-        chunk->lines = GROW_ARRAY(int, chunk->lines, oldCapacity, chunk->capacity);
+        // chunk->lines = GROW_ARRAY(LineEntry, chunk->lines, oldCapacity, chunk->capacity);
+
     }
 
     chunk->code[chunk->count] = byte;
-    chunk->lines[chunk->count] = line;
-    chunk->count++;
+    
+    // handle lines array seperately
+    if (chunk->lineCount == 0 || chunk->lines[chunk->lineCount - 1].lineNumber != line) {
+        // check if there's enough space for the lines array
+        if (chunk->lineCount >= chunk->lineCapacity) {
+            int oldLineCapacity = chunk->lineCapacity;
+            chunk->lineCapacity = GROW_CAPACITY(oldLineCapacity);
+            chunk->lines = GROW_ARRAY(LineEntry, chunk->lines, oldLineCapacity, chunk->lineCapacity);
+        }
+
+        // store a new line entry
+        chunk->lines[chunk->lineCount].lineNumber = line;
+        chunk->lines[chunk->lineCount].count = 1;
+        chunk->lineCount++;
+    } else {
+        // if the last entry matches, just increment the count
+        chunk->lines[chunk->lineCount - 1].count++;
+    }
+
 }
 
+
+void getLine() {
+    
+}
 
 /**
  * Adds a constant value to the constants array in the given chunk.
