@@ -26,13 +26,17 @@ static int simpleInstruction(const char* name, int offset) {
 int disassembleInstruction(Chunk* chunk, int offset) {
     printf("%04d ", offset);
 
-    if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
+    // Get the current line number using getLine
+    int lineNumber = getLine(chunk, offset);
+
+    // If it's the same as the previous line, just print "|"
+    if (offset > 0 && lineNumber == getLine(chunk, offset - 1)) {
         printf("   | ");
     } else {
-        printf("%4d ", chunk->lines[offset]);
+        printf("%4d ", lineNumber);
     }
 
-
+    // Get the instruction at the current offset
     uint8_t instruction = chunk->code[offset];
     switch (instruction) {
         case OP_CONSTANT:
