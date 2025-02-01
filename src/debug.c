@@ -2,6 +2,12 @@
 #include "include/debug.h"
 #include "include/value.h"
 
+/**
+ * Disassembles a chunk of bytecode and prints its contents for debugging purposes.
+ *
+ * @param chunk A pointer to the Chunk structure containing the bytecode to disassemble.
+ * @param name A string representing the name of the chunk, used for labeling the output.
+ */
 void disassembleChunk(Chunk* chunk, const char* name) {
     printf("=== %s ===\n", name);
 
@@ -23,8 +29,16 @@ static int simpleInstruction(const char* name, int offset) {
     return offset + 1;
 }
 
+/**
+ * Disassembles a single instruction from the given chunk at the specified offset.
+ *
+ * @param chunk A pointer to the Chunk containing the instruction to disassemble.
+ * @param offset The offset within the chunk where the instruction starts.
+ * @return The offset of the next instruction in the chunk.
+ */
 int disassembleInstruction(Chunk* chunk, int offset) {
     printf("%04d ", offset);
+    printf("this is debug.c");
 
     // Get the current line number using getLine
     int lineNumber = getLine(chunk, offset);
