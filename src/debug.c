@@ -16,18 +16,44 @@ void disassembleChunk(Chunk* chunk, const char* name) {
     }
 }
 
+/**
+ * @brief Disassembles a constant instruction for debugging purposes.
+ *
+ * This function prints the name of the instruction and the value of the constant
+ * at the specified offset within the given chunk.
+ *
+ * @param name The name of the instruction to be printed.
+ * @param chunk A pointer to the Chunk structure containing the bytecode and constants.
+ * @param offset The offset within the chunk where the instruction is located.
+ * @return The new offset after the instruction has been disassembled.
+ */
 static int constantInstruction(const char* name, Chunk* chunk, int offset) {
-    uint8_t constant = chunk->code[offset + 1];
-    printf("%-16s %4d '", name, constant);
+    // uint8_t constant = chunk->code[offset + 1];
+    uint8_t constant;
+
+    if (chunk->code[offset] == OP_CONSTANT) {
+        constant = chunk->code[offset + 1];         // // For OP_CONSTANT, one byte
+        printf("%-16s %4d '", name, constant);
+    } else if (chunk->code[offset] == OP_CONSTANT_LONG) {
+        constant = chunk->code[offset + 1] 
+        | (chunk->code[offset + 2] << 8) 
+        | (chunk->code[offset + 3] << 16);  // For OP_CONSTANT_LONG, three bytes
+        printf("%-16s %4d '", name, constant);
+    }
+
     printValue(chunk->constants.values[constant]);
     printf("'\n");
-    return offset + 2;
+    return offset + (chunk->code[offset] == OP_CONSTANT ? 2 : 4);  // Move offset accordingly
 }
+
+
 
 static int simpleInstruction(const char* name, int offset) {
     printf("%s\n", name);
     return offset + 1;
 }
+
+
 
 /**
  * Disassembles a single instruction from the given chunk at the specified offset.

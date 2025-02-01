@@ -7,24 +7,20 @@ int main(int argc, const char* argv[]) {
     Chunk chunk;
     initChunk(&chunk);  // Initialize the chunk
 
-    // Add an OP_CONSTANT instruction
-    int constant = addConstant(&chunk, 1.2);
-    writeChunk(&chunk, OP_CONSTANT, 1);
-    writeChunk(&chunk, constant, 1);
+    // Add a constant using OP_CONSTANT
+    writeConstant(&chunk, 1.2, 1);  // First constant
+
+    // Add a second constant that exceeds the range of OP_CONSTANT (use OP_CONSTANT_LONG)
+    writeConstant(&chunk, 1200, 3);  // Second constant
 
     // Add an OP_RETURN instruction
     writeChunk(&chunk, OP_RETURN, 1);
-
-    // Debugging output
-    // printf("Chunk count: %d\n", chunk.count);
-    // for (int i = 0; i < chunk.count; i++) {
-    //     printf("Byte %d: %02X\n", i, chunk.code[i]);
-    // }
 
     // Disassemble the chunk
     disassembleChunk(&chunk, "test chunk");
 
     // Free the chunk
     freeChunk(&chunk);
+
     return 0;
 }

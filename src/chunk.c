@@ -22,6 +22,7 @@ void freeChunk(Chunk* chunk) {
 }
 
 
+
 /**
  * @brief Writes a byte to the chunk.
  *
@@ -118,4 +119,31 @@ int addConstant(Chunk* chunk, Value value) {
     
     // returns the index of the newly added constants
     return chunk->constants.count - 1;
+}
+
+
+
+/**
+ * Writes a constant value to the chunk.
+ *
+ * @param chunk A pointer to the Chunk structure where the value will be written.
+ * @param value The constant value to be written to the chunk.
+ * @param line The line number in the source code where this constant is being written.
+ */
+void writeConstant(Chunk* chunk, Value value, int line) {
+    int index = addConstant(chunk, value);      // Get the index of the constant
+
+    if (index < 255) {
+        // Write OP_CONSTANT if index is within 0-255
+        writeChunk(chunk, OP_CONSTANT, line);
+        writeChunk(chunk, (uint8_t)index, line);  // Store the constant index (1 byte)
+    } else {
+        // Write OP_CONSTANT_LONG if index exceeds 255
+        writeChunk(chunk, OP_CONSTANT_LONG, line);
+        
+        // Write the 24-bit index (3 bytes)
+        writeChunk(chunk, (uint8_t)(index & 0xFF), line);      // LSB
+        writeChunk(chunk, (uint8_t)((index >> 8) & 0xFF), line); // Middle byte
+        writeChunk(chunk, (uint8_t)((index >> 16) & 0xFF), line); // MSB
+    }
 }
