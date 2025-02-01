@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include "include/chunk.h"
 #include "include/memory.h"
 #include "include/common.h"
@@ -46,7 +45,7 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
     }
 
     chunk->code[chunk->count] = byte;
-    printf("Written byte: %02x\n", byte);  // Debugging print statement
+    // printf("Written byte: %02x\n", byte);  // Debugging print statement
     
     // handle lines array seperately
     if (chunk->lineCount == 0 || chunk->lines[chunk->lineCount - 1].lineNumber != line) {
@@ -66,6 +65,7 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
         chunk->lines[chunk->lineCount - 1].count++;
     }
 
+    chunk->count++;     // increment chunk counter
 }
 
 

@@ -38,9 +38,8 @@ static int simpleInstruction(const char* name, int offset) {
  */
 int disassembleInstruction(Chunk* chunk, int offset) {
     printf("%04d ", offset);
-    printf("this is debug.c");
 
-    // Get the current line number using getLine
+    // fetch the current line number using getLine()
     int lineNumber = getLine(chunk, offset);
 
     // If it's the same as the previous line, just print "|"
