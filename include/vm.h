@@ -3,7 +3,7 @@
 
 typedef struct {
     Chunk* chunk;
-    uint8_t* ip;    // instruction pointer -> tracks the current instruction being executed by the VM's bytecode
+    uint8_t* ip;    // instruction pointer (program counter) -> tracks the current instruction being executed by the VM's bytecode
 } VM;
 
 
