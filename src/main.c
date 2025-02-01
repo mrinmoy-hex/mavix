@@ -22,6 +22,7 @@ int main(int argc, const char* argv[]) {
     // Disassemble the chunk
     disassembleChunk(&chunk, "test chunk");
 
+    interpret(&chunk);
     
     freeVM();
     freeChunk(&chunk);
