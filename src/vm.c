@@ -1,5 +1,6 @@
 #include "include/common.h"  
 #include "include/vm.h"      // Virtual machine (VM) definitions
+#include "include/debug.h"
 #include <stdio.h>
 
 VM vm;  // Global VM instance
@@ -48,6 +49,15 @@ static InterpretResult run() {
 
     // Continuously execute instructions
     for (;;) {
+
+        #ifdef DEBUG_TRACE_EXECUTION
+            printf("[DEBUG] Executing instruction at offset %ld\n", (vm.ip - vm.chunk->code));
+            disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));    // calculates the offset of the current ip within the bytecode array
+
+        #endif
+
+        // printf("Executing instruction at offset %d\n", (int)(vm.ip - vm.chunk->code));
+
         uint8_t instruction = READ_BYTE();  // Fetch the next instruction
         switch (instruction) {
             case OP_CONSTANT: {

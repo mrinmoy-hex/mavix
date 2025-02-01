@@ -28,22 +28,26 @@ void disassembleChunk(Chunk* chunk, const char* name) {
  * @return The new offset after the instruction has been disassembled.
  */
 static int constantInstruction(const char* name, Chunk* chunk, int offset) {
-    // uint8_t constant = chunk->code[offset + 1];
-    uint8_t constant;
-
     if (chunk->code[offset] == OP_CONSTANT) {
-        constant = chunk->code[offset + 1];         // // For OP_CONSTANT, one byte
+        uint8_t constant = chunk->code[offset + 1];  // One-byte index
         printf("%-16s %4d '", name, constant);
-    } else if (chunk->code[offset] == OP_CONSTANT_LONG) {
-        constant = chunk->code[offset + 1] 
-        | (chunk->code[offset + 2] << 8) 
-        | (chunk->code[offset + 3] << 16);  // For OP_CONSTANT_LONG, three bytes
+        printValue(chunk->constants.values[constant]);
+        printf("'\n");
+        return offset + 2;  // OP_CONSTANT takes 2 bytes
+    } 
+    
+    else if (chunk->code[offset] == OP_CONSTANT_LONG) {
+        uint32_t constant = chunk->code[offset + 1] 
+                          | (chunk->code[offset + 2] << 8) 
+                          | (chunk->code[offset + 3] << 16);  // Three-byte index
         printf("%-16s %4d '", name, constant);
+        printValue(chunk->constants.values[constant]);
+        printf("'\n");
+        return offset + 4;  // OP_CONSTANT_LONG takes 4 bytes
     }
 
-    printValue(chunk->constants.values[constant]);
-    printf("'\n");
-    return offset + (chunk->code[offset] == OP_CONSTANT ? 2 : 4);  // Move offset accordingly
+    printf("Unknown constant instruction!\n");
+    return offset + 1;  // Move forward to avoid infinite loop
 }
 
 
@@ -80,8 +84,13 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     switch (instruction) {
         case OP_CONSTANT:
             return constantInstruction("OP_CONSTANT", chunk, offset);
+
+        case OP_CONSTANT_LONG:
+            return constantInstruction("OP_CONSTANT_LONG", chunk, offset);
+
         case OP_RETURN:
             return simpleInstruction("OP_RETURN", offset);
+
         default:
             return simpleInstruction("Unknown opcode", offset);
     }
