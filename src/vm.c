@@ -5,15 +5,49 @@
 
 VM vm;  // Global VM instance
 
+static void resetStack() {
+    vm.stackTop = vm.stack;
+}
+
 // Initialize the virtual machine
 void initVM() {
-    // Initialization logic goes here
+    resetStack();
 }
 
 // Free resources used by the virtual machine
 void freeVM() {
     // Cleanup logic goes here
 }
+
+
+// stack operation
+/**
+ * @brief Pushes a value onto the stack.
+ *
+ * This function takes a Value and pushes it onto the stack for further
+ * processing or evaluation within the virtual machine.
+ *
+ * @param value The Value to be pushed onto the stack.
+ */
+void push(Value value) {
+    *vm.stackTop = value;
+    vm.stackTop++;
+}
+
+
+/**
+ * @brief Pops a value from the stack.
+ *
+ * This function removes the top value from the stack and returns it.
+ * It is assumed that the stack is not empty when this function is called.
+ *
+ * @return The value that was popped from the stack.
+ */
+Value pop() {
+    vm.stackTop--;
+    return *vm.stackTop;
+}
+
 
 
 /**
@@ -51,6 +85,14 @@ static InterpretResult run() {
     for (;;) {
 
         #ifdef DEBUG_TRACE_EXECUTION
+            printf("          ");
+            for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
+                printf("[ ");
+                printValue(*slot);
+                printf(" ]");
+            }
+            printf("\n");
+
             printf("[DEBUG] Executing instruction at offset %ld\n", (vm.ip - vm.chunk->code));
             disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));    // calculates the offset of the current ip within the bytecode array
 
@@ -62,8 +104,7 @@ static InterpretResult run() {
         switch (instruction) {
             case OP_CONSTANT: {
                 Value constant = READ_CONSTANT();
-                printValue(constant);
-                printf("\n");
+                push(constant);     // loads a value into the stack
                 break;
             }
 
@@ -71,12 +112,13 @@ static InterpretResult run() {
                 // read a 3-byte index and fetch the constant
                 uint32_t index = readLongIndex();
                 Value constant = vm.chunk->constants.values[index];
-                printValue(constant);
-                printf("\n");
+                push(constant);
                 break;
             }
 
             case OP_RETURN: {
+                printValue(pop());
+                printf("\n");
                 return INTERPRET_OK;  
             }  
         }
