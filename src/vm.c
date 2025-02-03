@@ -173,6 +173,7 @@ static InterpretResult run() {
     // Clean up the macro
     #undef READ_BYTE  
     #undef READ_CONSTANT
+    #undef BINARY_OP
 }
 
 // Interpret a chunk of bytecode

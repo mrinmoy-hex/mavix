@@ -95,8 +95,6 @@ int getLine(Chunk* chunk, int index) {
 }
 
 
-
-
 /**
  * Adds a constant value to the constants array in the given chunk.
  * 
@@ -130,9 +128,12 @@ int addConstant(Chunk* chunk, Value value) {
  * @param value The constant value to be written to the chunk.
  * @param line The line number in the source code where this constant is being written.
  */
+
+// support for unary operators will be added
 void writeConstant(Chunk* chunk, Value value, int line) {
     int index = addConstant(chunk, value);      // Get the index of the constant
 
+    // if ()
     if (index < 255) {
         // Write OP_CONSTANT if index is within 0-255
         writeChunk(chunk, OP_CONSTANT, line);
