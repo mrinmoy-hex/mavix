@@ -116,6 +116,11 @@ static InterpretResult run() {
                 break;
             }
 
+            case OP_NEGATE: {
+                push(-pop());       // negates the popped value (unary operator)
+                break;
+            }
+
             case OP_RETURN: {
                 printValue(pop());
                 printf("\n");

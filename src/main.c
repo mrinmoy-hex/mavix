@@ -16,6 +16,8 @@ int main(int argc, const char* argv[]) {
     // Add a second constant that exceeds the range of OP_CONSTANT (use OP_CONSTANT_LONG)
     writeConstant(&chunk, 1200, 3);  // Second constant
 
+    writeChunk(&chunk, OP_NEGATE, 123);
+
     // Add an OP_RETURN instruction
     writeChunk(&chunk, OP_RETURN, 1);
 

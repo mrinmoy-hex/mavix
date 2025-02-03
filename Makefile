@@ -1,7 +1,7 @@
 exec = mavix                       # Executable name
 src = $(wildcard src/*.c)         # Source files
 obj = $(patsubst src/%.c, build/%.o, $(src))  # Object files
-flags = -g -DDEBUG_TRACE_EXECUTION  # Define DEBUG_TRACE_EXECUTION
+flags = -g   # Define DEBUG_TRACE_EXECUTION
 inc_dir = -I./        # Include directory for header files (relative path)
 
 # Rule to create the executable
