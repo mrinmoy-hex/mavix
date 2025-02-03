@@ -78,6 +78,25 @@ static InterpretResult run() {
      * @return The constant value from the chunk's constants array.
      */
     #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+
+    
+    /**
+     * @brief Macro to perform a binary operation.
+     *
+     * This macro takes a binary operator as an argument and performs the
+     * corresponding operation. It is typically used to simplify the implementation
+     * of binary operations in the virtual machine.
+     *
+     * @param op The binary operator to be used in the operation.
+     */
+    #define BINARY_OP(op) \
+        do { \
+            Value b = pop(); \
+            Value a = pop(); \
+            push(a op b); \
+        } while (false)
+
+
     // Read the next byte from the instruction pointer using (*) and advance it
     #define READ_BYTE() (*vm.ip++)
 
@@ -116,6 +135,28 @@ static InterpretResult run() {
                 break;
             }
 
+            // for binary operations
+            case OP_ADD: {
+                BINARY_OP(+);
+                break;
+            }
+
+            case OP_SUBTRACT: {
+                BINARY_OP(-);
+                break;
+            }
+
+            case OP_MULTIPLY: {
+                BINARY_OP(*);
+                break;
+            }
+
+            case OP_DIVIDE: {
+                BINARY_OP(/);
+                break;
+            }
+
+            // for unary operators
             case OP_NEGATE: {
                 push(-pop());       // negates the popped value (unary operator)
                 break;
