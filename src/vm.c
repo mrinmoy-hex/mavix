@@ -2,6 +2,7 @@
 #include "include/vm.h"      // Virtual machine (VM) definitions
 #include "include/debug.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 VM vm;  // Global VM instance
 
@@ -30,6 +31,11 @@ void freeVM() {
  * @param value The Value to be pushed onto the stack.
  */
 void push(Value value) {
+    if (vm.stackTop > vm.stack + STACK_MAX) {
+        fprintf(stderr, "Stack overflow\n");
+        exit(1);
+    }
+
     *vm.stackTop = value;
     vm.stackTop++;
 }
@@ -44,6 +50,10 @@ void push(Value value) {
  * @return The value that was popped from the stack.
  */
 Value pop() {
+    if (vm.stackTop == vm.stack) {
+        fprintf(stderr, "Stack underflow!\n");
+        exit(1); // Terminate with an error
+    }
     vm.stackTop--;
     return *vm.stackTop;
 }
@@ -163,7 +173,7 @@ static InterpretResult run() {
             }
 
             case OP_RETURN: {
-                printValue(pop());
+                // printValue(pop());
                 printf("\n");
                 return INTERPRET_OK;  
             }  
