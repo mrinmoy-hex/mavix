@@ -18,12 +18,20 @@
 static void repl() {
     char line[1024];
     for (;;) {
-        printf("mavix =>> ");
+        printf("Mavix REPL v0.1\nType 'exit' or press Ctrl+D to quit.\n");
+
+        printf("mavix >>> ");
 
         if (!fgets(line, sizeof(line), stdin)) {
             printf("\n");
-            break;
+            break;      // handle Ctrl+D (EOF)
         }
+
+        // remove trailing newline
+        line[strcspn(line, "\n")] == '\0';
+
+        // exit command
+        if (strcmp(line, "exit") == 0) break;
 
         interpret(line);
     }
@@ -31,6 +39,34 @@ static void repl() {
 
 
 static char* readFile(const char* path) {
+    FILE* file = fopen(path, "rb");
+    // handling function call faileures
+    if (file == NULL) {
+        fprintf(stderr, "Could not open file \"%s\".\n", path);
+        exit(74);
+    }
+
+    fseek(file, 0L, SEEK_END);
+    size_t fileSize = ftell(file);
+    rewind(file);
+
+
+    char* buffer = (char*) malloc(fileSize + 1);
+    // edge case
+    if (buffer == NULL) {
+        fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
+        exit(74);
+    }
+
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
+    if (bytesRead < fileSize) {
+        fprintf(stderr, "Could not read file \"%s\".\n", path);
+        exit(74);
+    }
+    buffer[bytesRead] = '\0';
+
+    fclose(file);
+    return buffer;
 
 }
 
