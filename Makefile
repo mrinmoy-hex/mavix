@@ -1,4 +1,4 @@
-exec = mavix                       # Executable name
+exec = dist/mavix                       # Executable name
 src = $(wildcard src/*.c)         # Source files
 obj = $(patsubst src/%.c, build/%.o, $(src))  # Object files
 flags = -g   # Define DEBUG_TRACE_EXECUTION
@@ -17,7 +17,8 @@ build/%.o: src/%.c | build
 # Rule to create the build directory (if it doesn't exist)
 build:
 # Use -p to prevent errors if the directory exists
-	mkdir -p build                         
+	mkdir -p build    
+	mkdir -p dist                     
 
 # Clean up the build artifacts
 clean:
