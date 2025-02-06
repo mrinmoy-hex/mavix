@@ -38,6 +38,17 @@ static void repl() {
 }
 
 
+/**
+ * @brief Reads the contents of a file and returns it as a string.
+ *
+ * This function opens the file specified by the given path, reads its contents,
+ * and returns the contents as a dynamically allocated string. The caller is
+ * responsible for freeing the allocated memory.
+ *
+ * @param path The path to the file to be read.
+ * @return A pointer to the dynamically allocated string containing the file contents,
+ *         or NULL if an error occurs (e.g., the file cannot be opened).
+ */
 static char* readFile(const char* path) {
     FILE* file = fopen(path, "rb");
     // handling function call faileures
