@@ -1,30 +1,27 @@
-exec = dist/mavix                       # Executable name
-src = $(wildcard src/*.c)         # Source files
-obj = $(patsubst src/%.c, build/%.o, $(src))  # Object files
-flags = -g   # Define DEBUG_TRACE_EXECUTION
-inc_dir = -I./        # Include directory for header files (relative path)
+CC = gcc
+CFLAGS = -g -Wall -Wextra   # Enable debugging and warnings
+LDFLAGS =                   # Add linker flags if needed
+
+EXEC = dist/mavix           # Executable name
+SRC = $(wildcard src/*.c)   # Source files
+OBJ = $(patsubst src/%.c, build/%.o, $(SRC))  # Object files
+INC_DIR = -I./             # Include directory
 
 # Rule to create the executable
-$(exec): $(obj)
-# Link object files into the executable
-	$(CC) $(obj) $(flags) -o $(exec)        
+$(EXEC): $(OBJ) | build
+	$(CC) $(OBJ) $(LDFLAGS) -o $(EXEC)        
 
-# Rule to create the object files
+# Rule to create object files
 build/%.o: src/%.c | build
-# Add include directory for header files
-	gcc -c $(flags) $(inc_dir) $< -o $@     
+	$(CC) -c $(CFLAGS) $(INC_DIR) $< -o $@     
 
-# Rule to create the build directory (if it doesn't exist)
+# Rule to create build directory if it doesn’t exist
 build:
-# Use -p to prevent errors if the directory exists
-	mkdir -p build    
-	mkdir -p dist                     
+	mkdir -p build                     
 
-# Clean up the build artifacts
+# Clean up build artifacts
 clean:
-# Remove the build directory and its contents
-	rm -rf build                        
-	rm -f $(exec)                        
+	rm -rf build dist/mavix 
 
-# Declare clean and build as phony targets (not actual files)
+# Declare clean and build as phony targets
 .PHONY: clean build
