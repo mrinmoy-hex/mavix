@@ -1,6 +1,8 @@
 #include "include/common.h"  
 #include "include/vm.h"      // Virtual machine (VM) definitions
 #include "include/debug.h"
+#include "include/compiler.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -187,8 +189,7 @@ static InterpretResult run() {
 }
 
 // Interpret a chunk of bytecode
-InterpretResult interpret(Chunk* chunk) {
-    vm.chunk = chunk;          // Set the current chunk
-    vm.ip = vm.chunk->code;    // Set instruction pointer to the start of the chunk
-    return run();              
+InterpretResult interpret(const char* source) {
+    compile(source);
+    return INTERPRET_OK;          
 }
