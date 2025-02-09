@@ -26,11 +26,11 @@ void initScanner(const char* source) {
 }
 
 
-Token scanToken() {
-    scanner.start = scanner.current;
+// Token scanToken() {
+//     scanner.start = scanner.current;
 
-    if (isAtEnd()) return makeTokens(TOKEN_EOF);
+//     if (isAtEnd()) return makeTokens(TOKEN_EOF);
 
-    return errorToken("Unexpected character.");
+//     return errorToken("Unexpected character.");
 
-}
+// }
