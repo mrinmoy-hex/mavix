@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "include/common.h"
 #include "include/scanner.h"    
@@ -26,11 +27,46 @@ void initScanner(const char* source) {
 }
 
 
-// Token scanToken() {
-//     scanner.start = scanner.current;
+/*
+    If the current character is the null byte, then we’ve reached the end.
+*/
+static bool isAtEnd() {
+    return *scanner.current == '\0';
+}
 
-//     if (isAtEnd()) return makeTokens(TOKEN_EOF);
 
-//     return errorToken("Unexpected character.");
+static Token makeToken(TokenType type) {
+    Token token;
+    token.type = type;
+    token.start = scanner.start;
+    token.length = (int) (scanner.current - scanner.start);
+    token.line = scanner.line;
 
-// }
+    return token;
+}
+
+static Token errorToken(const char* message) {
+    Token token;
+    token.type = TOKEN_ERR;
+    token.start = message;
+    token.length = (int) strlen(message);
+    token.line = scanner.line;
+    return token;
+}
+
+
+Token scanToken() {
+    /**
+     * @brief we are at the beginning of a new token when we enter the function. 
+     * Thus, we set scanner.start to point to the current character so we remember where the 
+     * lexeme we’re about to scan starts.
+     */
+    scanner.start = scanner.current;
+
+    if (isAtEnd()) return makeToken(TOKEN_EOF);
+
+    return errorToken("Unexpected character.");
+
+}
+
+
