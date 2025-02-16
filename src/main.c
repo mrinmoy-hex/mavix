@@ -27,11 +27,14 @@ static void repl() {
             break;      // handle Ctrl+D (EOF)
         }
 
-        // remove trailing newline
-        line[strcspn(line, "\n")] == '\0';
+        // Remove trailing newline if present
+        line[strcspn(line, "\n")] = '\0';
 
-        // exit command
-        if (strcmp(line, "exit") == 0) break;
+        // Exit command check
+        if (strcmp(line, "exit") == 0) {
+            printf("Exiting REPL...\n");
+            break;
+        }
 
         interpret(line);
     }
