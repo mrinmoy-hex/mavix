@@ -40,6 +40,11 @@ static char advance() {
     return scanner.current[-1];     // return the previous char
 }
 
+// Returns the current char, doesn't consume it
+static char peek() {
+    return *scanner.current;
+}
+
 
 static bool match(char expected) {
     if (isAtEnd()) return false;
@@ -69,12 +74,37 @@ static Token errorToken(const char* message) {
 }
 
 
+static void skipWhitespace() {
+    for (;;) {
+        char c = peek();
+        switch (c) {
+            case ' ':
+            // also checks for carriage returns
+            case '\r':
+            case '\t':
+                advance();
+                break;
+
+            // handle newlines
+            case '\n':
+                scanner.line++;
+                advance();
+                break;
+
+            default:
+                return;
+        }
+    }
+}
+
+
 Token scanToken() {
     /**
      * @brief we are at the beginning of a new token when we enter the function. 
      * Thus, we set scanner.start to point to the current character so we remember where the 
      * lexeme we’re about to scan starts.
      */
+    skipWhitespace();
     scanner.start = scanner.current;
 
     if (isAtEnd()) return makeToken(TOKEN_EOF);
