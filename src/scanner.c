@@ -46,6 +46,12 @@ static char peek() {
 }
 
 
+static char peekNext() {
+    if (isAtEnd()) return '\0';
+    return scanner.current[1];
+}
+
+
 static bool match(char expected) {
     if (isAtEnd()) return false;
     if (*scanner.current != expected) return false;
@@ -91,6 +97,39 @@ static void skipWhitespace() {
                 advance();
                 break;
 
+            // handle single-line comments
+            case '/':
+                // single-line comments
+                if (peekNext() == '/') {
+                    // A comment goes until the end of the line
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                }
+                // multi-line comments 
+                else if (peek() == '*') {
+                    advance();      // consume '*'
+                    advance();      // move past the '/'
+
+                    while (!isAtEnd()) {    
+                        if (peek() == '\n') scanner.line++;     // trace newlines
+
+                        if (peek() == '*' && peekNext() == '/') {
+                            advance();      // consume '*'
+                            advance();      // consume '/'
+                            break;          // exit the loop after finding '*/'
+                        }
+                        
+                        advance();          // continue scanning inside the comment
+                    }
+                    
+                    // unterminated comment error
+                    if (isAtEnd()) {
+                        printf("Error: Unterminated multi-line comment error");
+                    }
+                } else {
+                        return;     // not a comment, return
+                    }
+                
+                break;
             default:
                 return;
         }
