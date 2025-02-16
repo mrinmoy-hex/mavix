@@ -35,6 +35,20 @@ static bool isAtEnd() {
 }
 
 
+static char advance() {
+    scanner.current++;
+    return scanner.current[-1];     // return the previous char
+}
+
+
+static bool match(char expected) {
+    if (isAtEnd()) return false;
+    if (*scanner.current != expected) return false;
+    scanner.current++;  // advances the pointer if matches
+    return true;
+}
+
+
 static Token makeToken(TokenType type) {
     Token token;
     token.type = type;
@@ -47,7 +61,7 @@ static Token makeToken(TokenType type) {
 
 static Token errorToken(const char* message) {
     Token token;
-    token.type = TOKEN_ERR;
+    token.type = TOKEN_ERROR;
     token.start = message;
     token.length = (int) strlen(message);
     token.line = scanner.line;
@@ -64,6 +78,41 @@ Token scanToken() {
     scanner.start = scanner.current;
 
     if (isAtEnd()) return makeToken(TOKEN_EOF);
+
+    // We then consume the current character and return a token for it.
+
+    char c = advance();
+
+    switch (c) {
+        case '(': return makeToken(TOKEN_LEFT_PAREN);
+        case ')': return makeToken(TOKEN_RIGHT_PAREN);
+        case '{': return makeToken(TOKEN_LEFT_BRACE);
+        case '}': return makeToken(TOKEN_RIGHT_BRACE);
+        case ';': return makeToken(TOKEN_SEMICOLON);
+        case ',': return makeToken(TOKEN_COMMA);
+        case '.': return makeToken(TOKEN_DOT);
+        case '-': return makeToken(TOKEN_MINUS);
+        case '+': return makeToken(TOKEN_PLUS);
+        case '/': return makeToken(TOKEN_SLASH);
+        case '*': return makeToken(TOKEN_ASTERISK);
+    
+        // making two-char punctuation
+        case '!':
+            return makeToken(
+                match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
+        case '=':
+        return makeToken(
+            match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
+        case '<':
+        return makeToken(
+            match('=') ? TOKEN_LESS_EQUAL : TOKEN_EQUAL);
+        case '>':
+        return makeToken(
+            match('=') ? TOKEN_GREATER_EQUAL : TOKEN_EQUAL);
+        
+    }
+
+    
 
     return errorToken("Unexpected character.");
 

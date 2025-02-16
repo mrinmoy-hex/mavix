@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -g -Wall -Wextra   # Enable debugging and warnings
 LDFLAGS =                   # Add linker flags if needed
 
-EXEC = dist/mavix           # Executable name
+EXEC = mavix           # Executable name
 SRC = $(wildcard src/*.c)   # Source files
 OBJ = $(patsubst src/%.c, build/%.o, $(SRC))  # Object files
 INC_DIR = -I./             # Include directory
