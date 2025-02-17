@@ -44,7 +44,7 @@ static bool isDigit(char c) {
 /*
     If the current character is the null byte, then we’ve reached the end.
 */
-static bool isAtEnd() {
+static inline bool isAtEnd() {
     return *scanner.current == '\0';
 }
 
@@ -168,7 +168,95 @@ static void skipWhitespace() {
 }
 
 
+/**
+ * @brief Checks if a given substring matches a specific keyword and returns the corresponding token type.
+ *
+ * This function verifies whether the identifier currently being scanned matches a predefined keyword.
+ * It does this by:
+ * 
+ * 1. Ensuring the identifier's length matches the expected keyword length.
+ * 2. Using `memcmp()` to check if the substring in the source code exactly matches the keyword.
+ *
+ * Unlike a Deterministic Finite Automaton (DFA), this function does not perform character-by-character 
+ * state transitions. Instead, it performs an **optimized direct comparison** for keyword detection.
+ *
+ * @param start The starting index of the substring in the source code.
+ * @param length The length of the substring to compare.
+ * @param rest The keyword to compare the substring against.
+ * @param type The token type to return if the substring matches the keyword.
+ * @return The token type if the substring matches the keyword, otherwise TOKEN_IDENTIFIER.
+ */
+static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+    /*
+     * This function determines if the current identifier is a keyword.
+     *
+     * Condition 1:
+     *   - The identifier's total length (scanner.current - scanner.start)
+     *     must match the expected keyword length (start + length).
+     *   - This prevents incorrect partial matches (e.g., "andrew" should not match "and").
+     *
+     * Condition 2:
+     *   - `memcmp()` checks whether the substring (starting from `scanner.start + start`)
+     *     is exactly the same as the keyword (`rest`) for `length` characters.
+     *   - `memcmp()` ensures a **fast and direct byte-by-byte comparison**.
+     *
+     * If both conditions are met, the function returns the corresponding keyword token;
+     * otherwise, it returns TOKEN_IDENTIFIER.
+     */
+    if (scanner.current - scanner.start == start + length &&
+        memcmp(scanner.start + start, rest, length) == 0) {
+        return type;
+    }
+
+    return TOKEN_IDENTIFIER;
+}
+
+
+
+/**
+ * Determines the type of an identifier token.
+ *
+ * This function analyzes the current identifier and returns its corresponding
+ * token type. It is used to differentiate between different types of identifiers
+ * such as keywords, user-defined identifiers, etc.
+ *
+ * @return TokenType The type of the identifier token.
+ */
 static TokenType identifierType() {
+    switch (scanner.start[0]) {
+        case 'a': return checkKeyword(1, 2, "nd", TOKEN_AND);
+        case 'c': return checkKeyword(1, 4, "lass", TOKEN_CLASS);
+        case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
+        case 'f': 
+        // check for 'false', 'for', 'fun'
+            if (scanner.current - scanner.start > 1) {      // ensure atleast two character
+                // checks the second character of false, for, fn
+                switch (scanner.start[1]) {
+                    case 'a': return checkKeyword(2, 3, "lse", TOKEN_FALSE);
+                    case 'o': return checkKeyword(2, 1, "r", TOKEN_FOR);
+                    case 'n': return checkKeyword(2, 0, "", TOKEN_FUN);
+                }
+            }
+            break;
+        case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
+        case 'n': return checkKeyword(1, 3, "ull", TOKEN_NIL);
+        case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
+        case 'p': return checkKeyword(1, 6, "rintln", TOKEN_PRINT);
+        case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
+        case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
+        case 't': 
+            // check for 'this', 'true'
+            if (scanner.current - scanner.start > 1) {
+                switch (scanner.start[1]) {
+                    case 'h': return checkKeyword(2, 2, "is", TOKEN_THIS);
+                    case 'r': return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+                }
+            }
+            break;
+        case 'v': return checkKeyword(1, 2, "ar", TOKEN_VAR);
+        case 'w': return checkKeyword(1, 4, "hile", TOKEN_WHILE);
+    }
+
     return TOKEN_IDENTIFIER;
 }
 
@@ -281,10 +369,10 @@ Token scanToken() {
             match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
         case '<':
         return makeToken(
-            match('=') ? TOKEN_LESS_EQUAL : TOKEN_EQUAL);
+            match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
         case '>':
         return makeToken(
-            match('=') ? TOKEN_GREATER_EQUAL : TOKEN_EQUAL);
+            match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
         
         // check for strings
         case '"': return string();
@@ -296,5 +384,3 @@ Token scanToken() {
     return errorToken("Unexpected character.");
 
 }
-
-
