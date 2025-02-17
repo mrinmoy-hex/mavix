@@ -123,7 +123,8 @@ static void skipWhitespace() {
                     
                     // unterminated comment error
                     if (isAtEnd()) {
-                        printf("Error: Unterminated multi-line comment error");
+                        // printf("Error: Unterminated multi-line comment error");
+                        errorToken("Unterminated multiline comment error.");
                     }
                 } else {
                         return;     // not a comment, return
@@ -135,6 +136,25 @@ static void skipWhitespace() {
         }
     }
 }
+
+
+
+static Token string() {
+
+    while (peek() != '"' && !isAtEnd()) {
+        if (peek() == '\n') scanner.line++;     // increments the linenumber in case of multiline strings.
+        advance();
+    } 
+
+    // if handling edge cases for string
+    if (isAtEnd()) return errorToken("Unterminated string.");
+
+    // the closing quote
+    advance();
+    return makeToken(TOKEN_STRING);
+}
+
+
 
 
 Token scanToken() {
@@ -178,6 +198,9 @@ Token scanToken() {
         case '>':
         return makeToken(
             match('=') ? TOKEN_GREATER_EQUAL : TOKEN_EQUAL);
+        
+        // check for strings
+        case '"': return string();
         
     }
 
