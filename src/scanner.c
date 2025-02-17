@@ -27,6 +27,13 @@ void initScanner(const char* source) {
 }
 
 
+static bool isAlpha(char c) {
+    return (c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z') ||
+            c == '_';
+}
+
+
 
 static bool isDigit(char c) {
     return c >= '0' && c <= '9';
@@ -68,6 +75,14 @@ static bool match(char expected) {
 }
 
 
+/**
+ * @brief Creates a new token of the specified type.
+ *
+ * This function initializes a new token with the given type.
+ *
+ * @param type The type of the token to be created.
+ * @return A new token of the specified type.
+ */
 static Token makeToken(TokenType type) {
     Token token;
     token.type = type;
@@ -88,6 +103,13 @@ static Token errorToken(const char* message) {
 }
 
 
+/**
+ * @brief Skips over any whitespace characters in the input.
+ *
+ * This function advances the input pointer past any whitespace characters
+ * (such as spaces, tabs, and newlines) until it encounters a non-whitespace
+ * character or the end of the input.
+ */
 static void skipWhitespace() {
     for (;;) {
         char c = peek();
@@ -146,6 +168,27 @@ static void skipWhitespace() {
 }
 
 
+static TokenType identifierType() {
+    return TOKEN_IDENTIFIER;
+}
+
+
+/**
+ * @brief Scans and returns the next identifier token from the input source.
+ *
+ * This function reads characters from the input source to form an identifier token.
+ * Identifiers typically consist of alphanumeric characters and underscores, and
+ * they represent variable names, function names, etc., in the source code.
+ *
+ * @return Token representing the scanned identifier.
+ */
+static Token identifier() {
+
+    while (isAlpha(peek()) || isDigit(peek())) advance();   // consume the identifier
+    return makeToken(identifierType());
+}
+
+
 /** 
   *  @note This scanner does not convert the value immediately. It only stores the raw text(lexeme)
   *  as it appears in the source code
@@ -186,6 +229,15 @@ static Token string() {
 
 
 
+/**
+ * @brief Scans and returns the next token from the input source.
+ *
+ * This function reads characters from the input source and constructs
+ * the next token to be processed by the lexer. It handles various types
+ * of tokens including keywords, identifiers, literals, and operators.
+ *
+ * @return Token The next token from the input source.
+ */
 Token scanToken() {
     /**
      * @brief we are at the beginning of a new token when we enter the function. 
@@ -200,6 +252,9 @@ Token scanToken() {
     // We then consume the current character and return a token for it.
 
     char c = advance();
+
+    // handling indentifiers
+    if (isAlpha(c)) return identifier();
 
     // handling digits
     if (isDigit(c)) return number();
