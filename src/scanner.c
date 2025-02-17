@@ -27,6 +27,13 @@ void initScanner(const char* source) {
 }
 
 
+
+static bool isDigit(char c) {
+    return c >= '0' && c <= '9';
+}
+
+
+
 /*
     If the current character is the null byte, then we’ve reached the end.
 */
@@ -48,6 +55,7 @@ static char peek() {
 
 static char peekNext() {
     if (isAtEnd()) return '\0';
+    // return *(scanner.current + 1)
     return scanner.current[1];
 }
 
@@ -138,6 +146,27 @@ static void skipWhitespace() {
 }
 
 
+/** 
+  *  @note This scanner does not convert the value immediately. It only stores the raw text(lexeme)
+  *  as it appears in the source code
+**/
+
+static Token number() {
+
+    while (isDigit(peek())) advance();
+
+    // look for a fractional part.
+    if (peek() == '.' && isDigit(peekNext())) {
+        // consume the '.'
+        advance();
+
+        while (isDigit(peek())) advance();
+    }
+
+    return makeToken(TOKEN_NUMBER);
+}
+
+
 
 static Token string() {
 
@@ -171,6 +200,9 @@ Token scanToken() {
     // We then consume the current character and return a token for it.
 
     char c = advance();
+
+    // handling digits
+    if (isDigit(c)) return number();
 
     switch (c) {
         case '(': return makeToken(TOKEN_LEFT_PAREN);
