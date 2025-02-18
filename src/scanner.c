@@ -379,7 +379,6 @@ Token scanToken() {
         
     }
 
-    
 
     return errorToken("Unexpected character.");
 
