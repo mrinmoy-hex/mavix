@@ -190,6 +190,19 @@ static InterpretResult run() {
 
 // Interpret a chunk of bytecode
 InterpretResult interpret(const char* source) {
-    compile(source);
-    return INTERPRET_OK;          
+    Chunk chunk;
+    initChunk(&chunk);
+
+    if (!compile(source, &chunk)) {
+        freeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    vm.chunk = &chunk;          // loading the compiled chunk to vm
+    vm.ip = vm.chunk->code;     // set the ip to the start of bytecode
+
+    InterpretResult result = run();
+
+    freeChunk(&chunk);
+    return result;
 }
