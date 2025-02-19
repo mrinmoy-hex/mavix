@@ -14,9 +14,16 @@ typedef struct {
 
 
 Parser parser;
+Chunk* compilingChunk;
+
+
+static Chunk* currentChunk() {
+    return compilingChunk;
+}
 
 
 static void errorAt(Token* token, const char* message) {
+    // if panic mode is active, return immediately
     if (parser.panicMode) return;
     parser.panicMode = true;    // activate panic mode to avoid cascading errors
     fprintf(stderr, "[line %d] Error", token->line);
@@ -79,8 +86,75 @@ static void consume(TokenType type, const char* message) {
 }
 
 
+
+
+static void emitByte(uint8_t byte) {
+    writeChunk(currentChunk(), byte, parser.previous.line);
+}
+
+
+static void emitBytes(uint8_t byte1, uint8_t byte2) {
+    emitByte(byte1);
+    emitByte(byte2);
+}
+
+
+static void endCompiler() {
+    emitReturn();
+}
+
+
+static void number() {
+    double value = strtod(parser.previous.start, NULL);
+    emitConstant(value);
+}
+
+
+static void expression() {
+
+}
+
+
+static void emitReturn() {
+    emitByte(OP_RETURN);
+}
+
+
+static uint8_t makeConstant(Value value) {
+    int constant = addConstant(currentChunk(), value);
+
+    if (constant <= UINT8_MAX) {
+        return (uint8_t)constant;
+    }
+
+    if (constant > 0xFFFFFF) {  // 16,777,215 max index
+        error("Too many constants in one chunk.");
+        return 0;
+    }
+
+    return constant;  // We’ll handle this in emitConstant()
+}
+
+
+
+static void emitConstant(Value value) {
+    int constant = addConstant(currentChunk(), value);
+
+    if (constant <= UINT8_MAX) {
+        emitBytes(OP_CONSTANT, (uint8_t)constant);
+    } else {
+        emitByte(OP_CONSTANT_LONG);
+        emitByte((constant >> 16) & 0xFF);      // high byte
+        emitByte((constant >> 8) & 0xFF);       // middle byte
+        emitByte(constant & 0xFF);              // low byte
+    }
+}
+
+
+
 bool compile(const char *source, Chunk* chunk) {
     initScanner(source);
+    compilingChunk = chunk;
 
     parser.hadError = false;
     parser.panicMode = false;
@@ -88,6 +162,7 @@ bool compile(const char *source, Chunk* chunk) {
     advance();
     expression();
     consume(TOKEN_EOF, "Expect end of expression.");
+    endCompiler();
     
     return !parser.hadError;
 }
