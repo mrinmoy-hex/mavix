@@ -17,11 +17,18 @@ build/%.o: src/%.c | build
 
 # Rule to create build directory if it doesn’t exist
 build:
-	mkdir -p build                     
+	mkdir -p build
+
+
+install: $(EXEC)
+	mkdir -p dist                  # Ensure dist directory exists
+	cp $(EXEC) dist/mavix          # Copy the executable to dist
+	cp dist/mavix /usr/local/bin/mavix  # Install it to /usr/local/bin
+
 
 # Clean up build artifacts
 clean:
-	rm -rf build dist/mavix 
+	rm -rf build dist/mavix /usr/local/bin/mavix
 
 # Declare clean and build as phony targets
 .PHONY: clean build
