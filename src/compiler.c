@@ -13,6 +13,24 @@ typedef struct {
 } Parser;
 
 
+// enum struct of precedence level (from lowest to highest)
+typedef enum {
+    PREC_NONE,
+    PREC_ASSIGNMENT,    // =
+    PREC_OR,            // or
+    PREC_AND,           // and
+    PREC_EQUALITY,      // == !=
+    PREC_COMPARISION,   // < > <= >=
+    PREC_TERM,          // + -
+    PREC_FACTOR,        // * /
+    PREC_UNARY,         // ! -
+    PREC_CALL,          // . ()
+    PREC_PRIMARY
+} Precedence;
+
+
+
+
 Parser parser;
 Chunk* compilingChunk;
 
@@ -104,14 +122,50 @@ static void endCompiler() {
 }
 
 
+// compiling groupings
+static void grouping() {
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+}
+
+
+
+// compiling number literals
 static void number() {
+    // convert string into float
     double value = strtod(parser.previous.start, NULL);
     emitConstant(value);
 }
 
 
-static void expression() {
 
+// compiling unary expression
+static void unary() {
+    TokenType operatorType = parser.previous.type;
+
+    // Compile the operand.
+    parsePrecedence(PREC_UNARY);
+
+    // Emit the operator instruction
+    switch (operatorType) {
+        case TOKEN_MINUS: emitByte(OP_NEGATE); break;
+        default: return;    // Unreachable
+    }
+}
+
+
+
+
+static void parsePrecedence(Precedence precedence) {
+    // What goes here?
+}
+
+
+
+
+
+static void expression() {
+    parsePrecedence(PREC_ASSIGNMENT);
 }
 
 
@@ -120,6 +174,7 @@ static void emitReturn() {
 }
 
 
+// Adds a constant & returns its index
 static uint8_t makeConstant(Value value) {
     int constant = addConstant(currentChunk(), value);
 
@@ -137,7 +192,9 @@ static uint8_t makeConstant(Value value) {
 
 
 
+// Adds a constant and emits bytecode 
 static void emitConstant(Value value) {
+    // add constant to chunk's constant pool
     int constant = addConstant(currentChunk(), value);
 
     if (constant <= UINT8_MAX) {
