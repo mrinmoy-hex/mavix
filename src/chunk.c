@@ -10,6 +10,7 @@ void initChunk(Chunk* chunk) {
     chunk->code = NULL;
     chunk->lines = NULL;
     chunk->lineCount = 0;
+    chunk->lineCapacity = 0;
     initValueArray(&chunk->constants);
 }
 
