@@ -5,6 +5,10 @@
 #include "include/compiler.h"
 #include "include/scanner.h"
 
+#ifdef DEBUG_PRINT_CODE
+#include "include/debug.h"
+#endif
+
 typedef struct {
     Token current;
     Token previous;
@@ -135,10 +139,68 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
     emitByte(byte2);
 }
 
+static void emitReturn() {
+    emitByte(OP_RETURN);
+}
+
+
+
+// Adds a constant & returns its index
+static uint8_t makeConstant(Value value) {
+    int constant = addConstant(currentChunk(), value);
+
+    if (constant <= UINT8_MAX) {
+        return (uint8_t)constant;
+    }
+
+    if (constant > 0xFFFFFF) {  // 16,777,215 max index
+        error("Too many constants in one chunk.");
+        return 0;
+    }
+
+    return constant;  // We’ll handle this in emitConstant()
+}
+
+
+
+// Adds a constant and emits bytecode 
+static void emitConstant(Value value) {
+    // add constant to chunk's constant pool
+    int constant = addConstant(currentChunk(), value);
+
+    if (constant <= UINT8_MAX) {
+        emitBytes(OP_CONSTANT, (uint8_t)constant);
+    } else {
+        emitByte(OP_CONSTANT_LONG);
+        emitByte((constant >> 16) & 0xFF);      // high byte
+        emitByte((constant >> 8) & 0xFF);       // middle byte
+        emitByte(constant & 0xFF);              // low byte
+    }
+}
+
+
+
 
 static void endCompiler() {
     emitReturn();
+
+
+
+#ifdef DEBUG_PRINT_CODE
+    if (!parser.hadError) {
+        disassembleChunk(currentChunk(), "code");
+    }
+#endif
+
 }
+
+
+
+static void expression();
+static ParseRule* getRule(TokenType type);
+static void parsePrecedence(Precedence precedence);
+
+
 
 
 
@@ -245,9 +307,31 @@ ParseRule rules[] = {
 
 
 static void parsePrecedence(Precedence precedence) {
-    // What goes here?
+    advance();
+    ParseFn prefixRule = getRule(parser.previous.type)->prefix;
+    if (prefixRule == NULL) {
+        printf("NULL prefix function for token: %d\n", parser.previous.type);
+        error("Expect expression.");
+        return;
+    }
+
+    prefixRule();
+
+
+    while (precedence <= getRule(parser.current.type)->precedence) {
+        advance();
+        ParseFn infixRule = getRule(parser.previous.type)->infix;
+        infixRule();
+    }
+
 }
 
+
+
+
+static ParseRule* getRule(TokenType type) {
+    return &rules[type];
+}
 
 
 
@@ -256,44 +340,6 @@ static void expression() {
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
-
-static void emitReturn() {
-    emitByte(OP_RETURN);
-}
-
-
-// Adds a constant & returns its index
-static uint8_t makeConstant(Value value) {
-    int constant = addConstant(currentChunk(), value);
-
-    if (constant <= UINT8_MAX) {
-        return (uint8_t)constant;
-    }
-
-    if (constant > 0xFFFFFF) {  // 16,777,215 max index
-        error("Too many constants in one chunk.");
-        return 0;
-    }
-
-    return constant;  // We’ll handle this in emitConstant()
-}
-
-
-
-// Adds a constant and emits bytecode 
-static void emitConstant(Value value) {
-    // add constant to chunk's constant pool
-    int constant = addConstant(currentChunk(), value);
-
-    if (constant <= UINT8_MAX) {
-        emitBytes(OP_CONSTANT, (uint8_t)constant);
-    } else {
-        emitByte(OP_CONSTANT_LONG);
-        emitByte((constant >> 16) & 0xFF);      // high byte
-        emitByte((constant >> 8) & 0xFF);       // middle byte
-        emitByte(constant & 0xFF);              // low byte
-    }
-}
 
 
 
