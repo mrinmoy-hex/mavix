@@ -306,6 +306,15 @@ ParseRule rules[] = {
 
 
 
+/**
+ * @brief Parses expressions with the given precedence level.
+ *
+ * This function processes expressions in the source code that match or exceed
+ * the specified precedence level. It is used to handle different levels of
+ * operator precedence during the parsing phase of the compiler.
+ *
+ * @param precedence The precedence level to parse expressions for.
+ */
 static void parsePrecedence(Precedence precedence) {
     advance();
     ParseFn prefixRule = getRule(parser.previous.type)->prefix;
@@ -343,6 +352,19 @@ static void expression() {
 
 
 
+/**
+ * @brief Compiles the given source code into a chunk of bytecode.
+ *
+ * This function takes the source code as input and compiles it into a 
+ * Chunk structure, which contains the bytecode representation of the 
+ * source code. The compilation process involves lexical analysis, 
+ * parsing, and code generation.
+ *
+ * @param source The source code to be compiled.
+ * @param chunk A pointer to the Chunk structure where the compiled 
+ *              bytecode will be stored.
+ * @return true if the compilation was successful, false otherwise.
+ */
 bool compile(const char *source, Chunk* chunk) {
     initScanner(source);
     compilingChunk = chunk;
