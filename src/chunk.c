@@ -8,9 +8,13 @@ void initChunk(Chunk* chunk) {
     chunk->count = 0;
     chunk->capacity = 0;
     chunk->code = NULL;
-    chunk->lines = NULL;
+
+    // Initialize line tracking array with a default capacity to prevent NULL access issues.
     chunk->lineCount = 0;
     chunk->lineCapacity = 0;
+    chunk->lines = (LineEntry*) malloc(sizeof(LineEntry) * chunk->lineCapacity);
+
+
     initValueArray(&chunk->constants);
 }
 
@@ -58,16 +62,16 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
             chunk->lines = GROW_ARRAY(LineEntry, chunk->lines, oldLineCapacity, chunk->lineCapacity);
         }
 
-        // store a new line entry
+        // store the new line number and initialize its instruction count.
         chunk->lines[chunk->lineCount].lineNumber = line;
         chunk->lines[chunk->lineCount].count = 1;
         chunk->lineCount++;
     } else {
-        // if the last entry matches, just increment the count
+        // if the last entry matches, simply increment the instruction count
         chunk->lines[chunk->lineCount - 1].count++;
     }
 
-    chunk->count++;     // increment chunk counter
+    chunk->count++;     // increment the total bytecode counter
 }
 
 
