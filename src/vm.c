@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "include/common.h"  
 #include "include/vm.h"      // Virtual machine (VM) definitions
 #include "include/debug.h"
@@ -11,6 +12,26 @@ VM vm;  // Global VM instance
 static void resetStack() {
     vm.stackTop = vm.stack;
 }
+
+
+static void runtimeError(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fputs("\n", stderr);
+
+    size_t instruction = vm.ip - vm.chunk->code - 1;
+
+    // use getLine to correctly retrieve the line number.
+    //int line = vm.chunk->lines->lineNumber[instruction];    // may create seg-fault
+    int line = getLine(vm.chunk, instruction);
+    fprintf(stderr, "line[ %d] in script \n", line);
+    
+    resetStack(); 
+}
+
+
 
 // Initialize the virtual machine
 void initVM() {
@@ -63,6 +84,23 @@ Value pop() {
 
 
 /**
+ * @brief Peeks at a value on the stack without removing it.
+ *
+ * This function retrieves a value from the stack at a specified distance
+ * from the top of the stack without modifying the stack.
+ *
+ * @param distance The distance from the top of the stack to peek at.
+ *                 A distance of 0 refers to the topmost element.
+ * @return The value at the specified distance from the top of the stack.
+ */
+static Value peek(int distance) {
+    return vm.stackTop[-1 - distance];      
+}
+
+
+
+
+/**
  * @brief Reads a long index from the bytecode.
  *
  * This function reads a 32-bit unsigned integer from the bytecode stream.
@@ -101,12 +139,16 @@ static InterpretResult run() {
      *
      * @param op The binary operator to be used in the operation.
      */
-    #define BINARY_OP(op) \
-        do { \
-            Value b = pop(); \
-            Value a = pop(); \
-            push(a op b); \
-        } while (false)
+    #define BINARY_OP(ValueType, op) \
+    do { \
+        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+          runtimeError("Operands must be numbers."); \
+          return INTERPRET_RUNTIME_ERROR; \
+        } \
+        double b = AS_NUMBER(pop()); \
+        double a = AS_NUMBER(pop()); \
+        push(ValueType(a op b)); \
+      } while (false)
 
 
     // Read the next byte from the instruction pointer using (*) and advance it
@@ -147,30 +189,42 @@ static InterpretResult run() {
                 break;
             }
 
+
+            case OP_NULL: push(NULL_VAL); break;
+
+            case OP_TRUE: push(BOOL_VAL(true)); break;
+            
+            case OP_FALSE: push(BOOL_VAL(false)); break;
+
+
             // for binary operations
             case OP_ADD: {
-                BINARY_OP(+);
+                BINARY_OP(NUMBER_VAL, +);
                 break;
             }
 
             case OP_SUBTRACT: {
-                BINARY_OP(-);
+                BINARY_OP(NUMBER_VAL, -);
                 break;
             }
 
             case OP_MULTIPLY: {
-                BINARY_OP(*);
+                BINARY_OP(NUMBER_VAL, *);
                 break;
             }
 
             case OP_DIVIDE: {
-                BINARY_OP(/);
+                BINARY_OP(NUMBER_VAL, /);
                 break;
             }
 
             // for unary operators
             case OP_NEGATE: {
-                push(-pop());       // negates the popped value (unary operator)
+                if (!IS_NUMBER(peek(0))) {
+                    runtimeError("Operand must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
             }
 
