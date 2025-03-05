@@ -63,7 +63,7 @@ void printValue(Value value) {
         case VAL_BOOL:
             printf(AS_BOOL(value) ? "true": "false");
             break;
-        case VAL_NULL:      printf("nil"); break;
+        case VAL_NULL:      printf("null"); break;
         case VAL_NUMBER:    printf("%g", AS_NUMBER(value));
         break;
     }

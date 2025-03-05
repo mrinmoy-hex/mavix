@@ -99,6 +99,12 @@ static Value peek(int distance) {
 
 
 
+static bool isFalsey(Value value) {
+    return IS_NULL(value) || (IS_BOOL(value) && !AS_BOOL(value));
+}
+
+
+
 
 /**
  * @brief Reads a long index from the bytecode.
@@ -215,6 +221,11 @@ static InterpretResult run() {
 
             case OP_DIVIDE: {
                 BINARY_OP(NUMBER_VAL, /);
+                break;
+            }
+
+            case OP_NOT: {
+                push(BOOL_VAL(isFalsey(pop())));
                 break;
             }
 
