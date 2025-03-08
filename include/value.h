@@ -44,6 +44,7 @@ typedef struct {
 
 
 // funtion prototypes
+bool valuesEqual(Value a, Value b);
 void initValueArray(ValueArray* array);
 void writeValueArray(ValueArray* array, Value value);
 void freeValueArray(ValueArray* array);
